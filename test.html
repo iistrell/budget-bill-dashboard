@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Connection Test</title>
+    <style>
+        .box { border: 2px solid #002366; padding: 20px; margin: 20px; border-radius: 10px; }
+        #display { font-weight: bold; color: #FF6700; }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h1>Connection Status:</h1>
+        <div id="display">Waiting for data...</div>
+    </div>
+
+    <script>
+        // PASTE YOUR NEW TEST CSV LINK BELOW
+        const csvURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRq6JXoh59EYEHT2Arw-TfWWrDYp4aPKMAhAXzeoQcHyWkIxKpBuggVwcezAxyMO82n4OWtE4_drJdh/pub?output=csv';
+
+        async function testConnection() {
+            try {
+                const response = await fetch(csvURL);
+                const text = await response.text();
+                console.log("Data caught:", text);
+
+                const rows = text.split(/\r?\n/);
+                if(rows.length > 1) {
+                    const dataRow = rows[1].split(',');
+                    // This pulls whatever is in Column B (Title)
+                    document.getElementById('display').innerHTML = "✅ SUCCESS! Found: " + dataRow[1];
+                } else {
+                    document.getElementById('display').innerHTML = "❌ Connected, but the sheet looks empty.";
+                }
+            } catch (e) {
+                document.getElementById('display').innerHTML = "❌ FAILED: " + e.message;
+            }
+        }
+        testConnection();
+    </script>
+</body>
+</html>
