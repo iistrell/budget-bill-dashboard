@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mr. Budget Bill | Command Center</title>
+    <style>
+        :root { --blue: #002366; --orange: #FF6700; --bg: #f4f7f9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        header { background: var(--blue); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid var(--orange); border-radius: 10px 10px 0 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .logo { font-size: 24px; font-weight: bold; }
+        .logo span { color: var(--orange); }
+        .board { display: flex; gap: 20px; padding: 20px 0; overflow-x: auto; }
+        .column { background: #e2e4e6; border-radius: 8px; min-width: 300px; padding: 10px; box-shadow: inset 0 0 5px rgba(0,0,0,0.05); }
+        .column-header { padding: 10px; font-weight: bold; color: var(--blue); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--orange); margin-bottom: 10px; }
+        .card { background: white; border-radius: 6px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 5px solid var(--blue); transition: 0.2s; }
+        .card:hover { transform: scale(1.02); border-left-color: var(--orange); }
+        .card h4 { margin: 0 0 10px 0; color: #333; }
+        .card p { font-size: 13px; color: #666; line-height: 1.4; }
+        .tag { font-size: 10px; font-weight: bold; background: #eee; padding: 3px 8px; border-radius: 12px; display: inline-block; margin-top: 10px; }
+        .sync-btn { background: var(--orange); border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">Mr. Budget<span>Bill</span></div>
+    <div><button class="sync-btn" onclick="fetchData()">🔄 Sync with Google Sheet</button></div>
+</header>
+
+<div class="board" id="kanban-board">
+    <div class="column" id="col-Idea">
+        <div class="column-header">💡 Ideas Bucket</div>
+        <div id="ideas-list"></div>
+    </div>
+    <div class="column" id="col-Ready">
+        <div class="column-header">✅ Ready to Film</div>
+        <div id="ready-list"></div>
+    </div>
+    <div class="column" id="col-Done">
+        <div class="column-header">🚀 Live / Done</div>
+        <div id="done-list"></div>
+    </div>
+</div>
+
+<script>
+    // THE BULLETPROOF URL
+    const sheetURL = 'https://docs.google.com/spreadsheets/d/1wF_8A3o9NxNmRI6LbUkSbW6U1yadmOwMdTwIoMnV7Xy-_wVDl7DgrA5cl5S8VSvfjTT/gviz/tq?tqx=out:csv&sheet=Kanban';
+
+    async function fetchData() {
+        try {
+            // Using a simple fetch - the 'gviz' link handles the security better
+            const response = await fetch(sheetURL);
+            if (!response.ok) throw new Error('Google is blocking the request.');
+            
+            const data = await response.text();
+            const rows = data.split(/\r?\n/).slice(1); 
+            
+            document.getElementById('ideas-list').innerHTML = '';
+            document.getElementById('ready-list').innerHTML = '';
+            document.getElementById('done-list').innerHTML = '';
+
+            rows.forEach(row => {
+                // Split by comma but handle quotes
+                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                if (!cols || cols.length < 3) return;
+                
+                // Gviz often adds double quotes around everything, so we strip them
+                const clean = (str) => str ? str.replace(/^"|"$/g, "").trim() : "";
+
+                const title = clean(cols[1]);
+                const status = clean(cols[2]);
+                const category = clean(cols[3]);
+                const notes = clean(cols[4]);
+
+                const cardHTML = `
+                    <div class="card">
+                        <h4>${title}</h4>
+                        <p>${notes}</p>
+                        <span class="tag">${category}</span>
+                    </div>
+                `;
+
+                if (status === 'Idea') document.getElementById('ideas-list').innerHTML += cardHTML;
+                if (status === 'Ready') document.getElementById('ready-list').innerHTML += cardHTML;
+                if (status === 'Done') document.getElementById('done-list').innerHTML += cardHTML;
+            });
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Sync Failed: " + error.message);
+        }
+    }
+
+    fetchData();
+</script>
+
+</body>
+</html>
