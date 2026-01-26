@@ -38,20 +38,26 @@
             const response = await fetch(csvURL);
             const text = await response.text();
             
-            // Split by lines
-            const rows = text.split(/\r?\n/).filter(r => r.trim() !== "");
-            
-            // Clear existing cards
+            // 1. Split into raw lines
+            const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+            if (lines.length < 2) return;
+
+            // 2. DETECT THE SEPARATOR (The "Detective" part)
+            // We check the header row for a comma or a tab.
+            const header = lines[0];
+            let separator = ","; 
+            if (header.includes("\t")) separator = "\t"; 
+
             document.getElementById('Idea').innerHTML = '';
-            
-            // Start from 1 to skip the header row
-            for (let i = 1; i < rows.length; i++) {
-                // This regex is the gold standard for CSVs. 
-                // It splits by commas but IGNORES commas inside quotes.
-                const cols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+
+            // 3. Process each row
+            for (let i = 1; i < lines.length; i++) {
+                // Split by the detected separator
+                const cols = lines[i].split(separator);
                 
                 const clean = (val) => {
                     if (!val) return "";
+                    // Remove quotes if they exist
                     return val.replace(/^"|"$/g, '').trim();
                 };
 
@@ -78,9 +84,8 @@
                 }
             }
 
-            document.getElementById('status-light').innerHTML = "✅ Vault Synced: " + (rows.length - 1) + " Entries";
+            document.getElementById('status-light').innerHTML = "✅ Vault Synced: " + (lines.length - 1) + " Entries";
         } catch (e) {
-            console.error("Fetch Error:", e);
             document.getElementById('status-light').innerHTML = "❌ Sync Error";
         }
     }
