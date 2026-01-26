@@ -27,7 +27,7 @@
 </div>
 
 <script>
-    // USE THE SAME LINK THAT WORKED FOR YOUR TEST HERE
+    // Make sure this is the link for your FB_Vault tab
     const csvURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJZMqqGIz4WkF_8A3o9NxNmRI6LbUkSbW6U1yadmOwMdTwIoMnV7Xy-_wVDl7DgrA5cl5S8VSvfjTT/pub?gid=0&single=true&output=csv';
 
     async function fetchData() {
@@ -36,29 +36,52 @@
             const text = await response.text();
             const rows = text.split(/\r?\n/).filter(r => r.trim() !== "").slice(1);
             
-            document.getElementById('status-light').innerHTML = "✅ Connected: " + rows.length + " rows found";
+            document.getElementById('Idea').innerHTML = '';
+            document.getElementById('Ready').innerHTML = '';
+            document.getElementById('Done').innerHTML = '';
 
             rows.forEach(row => {
-                // This handles commas better than a standard split
                 const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || row.split(',');
+                const clean = (s) => (s || "").replace(/^"|"$/g, "").trim();
                 
-                const title = (cols[1] || "").replace(/^"|"$/g, "").trim();
-                const status = (cols[2] || "").replace(/^"|"$/g, "").trim().toLowerCase();
-                const notes = (cols[4] || "").replace(/^"|"$/g, "").trim();
+                const category = clean(cols[0]); // Wealth, Travel, etc.
+                const headline = clean(cols[1]); // Headline
+                const subtext  = clean(cols[2]); // Sub-text
+                const status   = clean(cols[5] || "").toLowerCase(); // We'll look for a 'Status' in Column F if you add it later
 
-                if (title) {
-                    const card = `<div class="card"><h4>${title}</h4><p>${notes}</p></div>`;
+                if (headline) {
+                    // Choose a border color based on Category
+                    let color = "#002366"; // Default Blue
+                    if (category.includes("Wealth")) color = "#2ecc71"; // Green
+                    if (category.includes("Travel")) color = "#3498db"; // Blue
+                    if (category.includes("Math")) color = "#9b59b6";   // Purple
+                    if (category.includes("Credit")) color = "#e74c3c"; // Red
+                    if (category.includes("Lifestyle")) color = "#f1c40f"; // Yellow
+
+                    const card = `
+                        <div class="card" style="border-left: 5px solid ${color}">
+                            <div style="font-size:9px; color:${color}; font-weight:bold; margin-bottom:5px;">${category.toUpperCase()}</div>
+                            <h4>${headline}</h4>
+                            <p>${subtext}</p>
+                        </div>`;
                     
-                    if (status.includes('idea')) document.getElementById('Idea').innerHTML += card;
-                    else if (status.includes('ready')) document.getElementById('Ready').innerHTML += card;
-                    else if (status.includes('done')) document.getElementById('Done').innerHTML += card;
+                    // Logic: If status is empty, it's an Idea. Otherwise, follow the status.
+                    if (status.includes('ready')) {
+                        document.getElementById('Ready').innerHTML += card;
+                    } else if (status.includes('done')) {
+                        document.getElementById('Done').innerHTML += card;
+                    } else {
+                        document.getElementById('Idea').innerHTML += card;
+                    }
                 }
             });
+            document.getElementById('status-light').innerHTML = "✅ " + rows.length + " Vault Entries Loaded";
         } catch (e) {
-            document.getElementById('status-light').innerHTML = "❌ Error: " + e.message;
+            document.getElementById('status-light').innerHTML = "❌ Connection Lost";
         }
     }
     window.onload = fetchData;
 </script>
+    
 </body>
 </html>
