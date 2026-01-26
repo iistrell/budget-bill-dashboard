@@ -37,29 +37,35 @@
         try {
             const response = await fetch(csvURL);
             const text = await response.text();
-            // Split into rows and skip header
-            const rows = text.split(/\r?\n/).filter(r => r.trim() !== "").slice(1);
             
+            // Split by lines
+            const rows = text.split(/\r?\n/).filter(r => r.trim() !== "");
+            
+            // Clear existing cards
             document.getElementById('Idea').innerHTML = '';
-            document.getElementById('Ready').innerHTML = '';
-            document.getElementById('Done').innerHTML = '';
-
-            rows.forEach(row => {
-                // Parse CSV columns correctly (handling commas inside quotes)
-                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || row.split(',');
-                const clean = (s) => (s || "").replace(/^"|"$/g, "").trim();
+            
+            // Start from 1 to skip the header row
+            for (let i = 1; i < rows.length; i++) {
+                // This regex is the gold standard for CSVs. 
+                // It splits by commas but IGNORES commas inside quotes.
+                const cols = rows[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 
-                const category = clean(cols[0]); // A: Category
-                const headline = clean(cols[1]); // B: Headline/Quote
-                const subtext  = clean(cols[2]); // C: Sub-text/Caption
+                const clean = (val) => {
+                    if (!val) return "";
+                    return val.replace(/^"|"$/g, '').trim();
+                };
+
+                const category = clean(cols[0]); 
+                const headline = clean(cols[1]); 
+                const subtext  = clean(cols[2]); 
 
                 if (headline) {
-                    // Set category colors
                     let color = "#002366";
-                    if (category.toLowerCase().includes('wealth')) color = "#27ae60"; // Green
-                    if (category.toLowerCase().includes('credit')) color = "#e74c3c"; // Red
-                    if (category.toLowerCase().includes('travel')) color = "#2980b9"; // Blue
-                    if (category.toLowerCase().includes('math')) color = "#8e44ad";   // Purple
+                    const catLower = category.toLowerCase();
+                    if (catLower.includes('wealth')) color = "#27ae60"; 
+                    if (catLower.includes('credit')) color = "#e74c3c"; 
+                    if (catLower.includes('travel')) color = "#2980b9"; 
+                    if (catLower.includes('math')) color = "#8e44ad";
 
                     const cardHtml = `
                         <div class="card" style="border-left-color: ${color}">
@@ -68,15 +74,13 @@
                             <p>${subtext}</p>
                         </div>`;
                     
-                    // Logic: By default, put all FB_Vault items in the first column
-                    // If you eventually add a "Status" column, we can change this logic.
                     document.getElementById('Idea').innerHTML += cardHtml;
                 }
-            });
+            }
 
-            document.getElementById('status-light').innerHTML = "✅ Vault Synced: " + rows.length + " Entries";
+            document.getElementById('status-light').innerHTML = "✅ Vault Synced: " + (rows.length - 1) + " Entries";
         } catch (e) {
-            console.error(e);
+            console.error("Fetch Error:", e);
             document.getElementById('status-light').innerHTML = "❌ Sync Error";
         }
     }
