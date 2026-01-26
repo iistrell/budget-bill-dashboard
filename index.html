@@ -31,47 +31,35 @@
 </div>
 
 <script>
-    const csvURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJZMqqGIz4WkF_8A3o9NxNmRI6LbUkSbW6U1yadmOwMdTwIoMnV7Xy-_wVDl7DgrA5cl5S8VSvfjTT/pub?gid=539377752&single=true&output=csv';
+    const csvURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJZMqqGIz4WkF_8A3o9NxNmRI6LbUkSbW6U1yadmOwMdTwIoMnV7Xy-_wVDl7DgrA5cl5S8VSvfjTT/pub?gid=539377752&single=true&output=csv&cb=' + Math.random();
 
     async function fetchData() {
         try {
             const response = await fetch(csvURL);
             const text = await response.text();
-            
-            // 1. Split into raw lines
             const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
-            if (lines.length < 2) return;
-
-            // 2. DETECT THE SEPARATOR (The "Detective" part)
-            // We check the header row for a comma or a tab.
-            const header = lines[0];
-            let separator = ","; 
-            if (header.includes("\t")) separator = "\t"; 
-
+            
             document.getElementById('Idea').innerHTML = '';
+            document.getElementById('Ready').innerHTML = '';
+            document.getElementById('Done').innerHTML = '';
 
-            // 3. Process each row
             for (let i = 1; i < lines.length; i++) {
-                // Split by the detected separator
-                const cols = lines[i].split(separator);
+                // Split by comma but respect quotes
+                const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 
-                const clean = (val) => {
-                    if (!val) return "";
-                    // Remove quotes if they exist
-                    return val.replace(/^"|"$/g, '').trim();
-                };
+                const clean = (val) => (val || "").replace(/^"|"$/g, '').trim();
 
                 const category = clean(cols[0]); 
                 const headline = clean(cols[1]); 
                 const subtext  = clean(cols[2]); 
+                const status   = clean(cols[5]).toLowerCase(); // <--- LOOKING AT COLUMN F
 
                 if (headline) {
                     let color = "#002366";
-                    const catLower = category.toLowerCase();
-                    if (catLower.includes('wealth')) color = "#27ae60"; 
-                    if (catLower.includes('credit')) color = "#e74c3c"; 
-                    if (catLower.includes('travel')) color = "#2980b9"; 
-                    if (catLower.includes('math')) color = "#8e44ad";
+                    const cat = category.toLowerCase();
+                    if (cat.includes('wealth')) color = "#27ae60"; 
+                    if (cat.includes('credit')) color = "#e74c3c"; 
+                    if (cat.includes('travel')) color = "#2980b9"; 
 
                     const cardHtml = `
                         <div class="card" style="border-left-color: ${color}">
@@ -80,11 +68,18 @@
                             <p>${subtext}</p>
                         </div>`;
                     
-                    document.getElementById('Idea').innerHTML += cardHtml;
+                    // SORTING LOGIC
+                    if (status === 'ready') {
+                        document.getElementById('Ready').innerHTML += cardHtml;
+                    } else if (status === 'done') {
+                        document.getElementById('Done').innerHTML += cardHtml;
+                    } else {
+                        // If status is blank or says "idea", put it here
+                        document.getElementById('Idea').innerHTML += cardHtml;
+                    }
                 }
             }
-
-            document.getElementById('status-light').innerHTML = "✅ Vault Synced: " + (lines.length - 1) + " Entries";
+            document.getElementById('status-light').innerHTML = "✅ Sync Successful";
         } catch (e) {
             document.getElementById('status-light').innerHTML = "❌ Sync Error";
         }
