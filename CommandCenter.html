@@ -42,47 +42,54 @@
 </div>
 
 <script>
-    // This is your specific Sheet ID
+    // This is the direct ID for your Mr. Budget Bill Sheet
     const sheetID = '1wF_8A3o9NxNmRI6LbUkSbW6U1yadmOwMdTwIoMnV7Xy-_wVDl7DgrA5cl5S8VSvfjTT';
-    const csvURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=Kanban`;
     
-    // We use a proxy to bypass the "Failed to Fetch" error
-    const proxyURL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(csvURL);
+    // We are telling Google: "Give me the tab named Data in CSV format"
+    const csvURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=Data`;
 
     async function fetchData() {
         try {
-            const response = await fetch(proxyURL);
-            const json = await response.json();
-            const data = json.contents;
+            console.log("Attempting to sync...");
+            const response = await fetch(csvURL);
+            const text = await response.text();
             
-            const rows = data.split('\n').slice(1);
+            // Splits rows and removes the header
+            const rows = text.split('\n').slice(1);
             
-            // Clear columns
+            // Clear current cards
             document.getElementById('Idea').innerHTML = '';
             document.getElementById('Ready').innerHTML = '';
             document.getElementById('Done').innerHTML = '';
 
             rows.forEach(row => {
+                // Splits columns correctly even if there are commas in your notes
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (cols.length < 3) return;
 
                 const clean = (s) => s ? s.replace(/^"|"$/g, "").trim() : "";
+                
                 const title = clean(cols[1]);
-                const status = clean(cols[2]);
+                const status = clean(cols[2]); // This looks for 'Idea', 'Ready', or 'Done'
                 const notes = clean(cols[4]);
 
-                const card = `<div class="card"><h4>${title}</h4><p>${notes}</p></div>`;
-                
-                if (status === 'Idea') document.getElementById('Idea').innerHTML += card;
-                if (status === 'Ready') document.getElementById('Ready').innerHTML += card;
-                if (status === 'Done') document.getElementById('Done').innerHTML += card;
+                if (title && status) {
+                    const card = `<div class="card"><h4>${title}</h4><p>${notes}</p></div>`;
+                    const column = document.getElementById(status);
+                    if (column) {
+                        column.innerHTML += card;
+                    }
+                }
             });
+            console.log("Sync successful!");
         } catch (e) {
-            alert("Sync error. Please ensure your Google Sheet is set to 'Anyone with the link can view'.");
+            console.error("Sync error:", e);
         }
     }
 
-    fetchData(); // Run on load
+    // Runs automatically when the page loads
+    window.onload = fetchData;
 </script>
+    
 </body>
 </html>
