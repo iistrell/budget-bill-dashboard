@@ -6,24 +6,32 @@
     <style>
         :root { --blue: #002366; --orange: #FF6700; --bg: #f4f7f9; }
         body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        header { background: var(--blue); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid var(--orange); border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        header { 
+            background: var(--blue); 
+            color: white; 
+            padding: 15px 25px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 5px solid var(--orange); 
+            border-radius: 10px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+        }
         .board { display: flex; gap: 20px; padding: 20px 0; overflow-x: auto; }
         .column { background: #e2e4e6; border-radius: 8px; min-width: 300px; padding: 10px; min-height: 80vh; }
         .column-header { padding: 10px; font-weight: bold; color: var(--blue); border-bottom: 2px solid var(--orange); margin-bottom: 10px; text-align: center; }
         .card { background: white; border-radius: 6px; padding: 15px; margin-bottom: 15px; border-left: 5px solid var(--blue); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .card h4 { margin: 0 0 5px 0; }
-        .card p { font-size: 13px; color: #666; }
-        .sync-btn { background: var(--orange); border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .card h4 { margin: 0 0 5px 0; color: var(--blue); }
+        .card p { font-size: 13px; color: #444; line-height: 1.4; }
+        .sync-btn { background: var(--orange); border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .sync-btn:hover { background: #e65c00; }
     </style>
 </head>
 <body>
-<header style="background: #002366; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #FF6700;">
-    <div style="font-size: 24px; font-weight: bold;">Mr. Budget Bill</div>
-    <button onclick="fetchData()" style="background: #FF6700; border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">🔄 Sync Data</button>
-</header>
+
 <header>
     <div style="font-size: 24px; font-weight: bold;">Mr. Budget<span style="color:var(--orange)">Bill</span></div>
-    <button class="sync-btn" onclick="fetchData()">🔄 Refresh Board</button>
+    <button class="sync-btn" onclick="fetchData()">🔄 Sync Dashboard</button>
 </header>
 
 <div class="board">
@@ -43,20 +51,19 @@
 
 <script>
     const sheetID = '1wF_8A3o9NxNmRI6LbUkSbW6U1yadmOwMdTwIoMnV7Xy-_wVDl7DgrA5cl5S8VSvfjTT';
-    
-    // This matches your tab name exactly
     const sheetName = 'Kanban'; 
     const csvURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
 
     async function fetchData() {
         try {
-            // Using a proxy to bypass the "Google is blocking" error
+            console.log("Fetching from Google...");
             const proxyURL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(csvURL);
             const response = await fetch(proxyURL);
             const json = await response.json();
             const text = json.contents;
             
-            const rows = text.split('\n').slice(1);
+            // This split handles both Windows and Mac style line breaks
+            const rows = text.split(/\r?\n/).slice(1);
             
             document.getElementById('Idea').innerHTML = '';
             document.getElementById('Ready').innerHTML = '';
@@ -69,24 +76,26 @@
                 const clean = (s) => s ? s.replace(/^"|"$/g, "").trim() : "";
                 
                 const title = clean(cols[1]);
-                const status = clean(cols[2]); // This looks for 'Idea', 'Ready', or 'Done'
+                const status = clean(cols[2]); // Must match 'Idea', 'Ready', or 'Done'
                 const notes = clean(cols[4]);
 
                 if (title && status) {
                     const card = `<div class="card"><h4>${title}</h4><p>${notes}</p></div>`;
-                    const column = document.getElementById(status);
-                    if (column) {
-                        column.innerHTML += card;
+                    const targetDiv = document.getElementById(status);
+                    if (targetDiv) {
+                        targetDiv.innerHTML += card;
                     }
                 }
             });
+            console.log("Sync Complete!");
         } catch (e) {
             console.error("Sync error:", e);
+            alert("Connection error. Check console for details.");
         }
     }
 
     window.onload = fetchData;
 </script>
-    
+
 </body>
 </html>
