@@ -42,28 +42,27 @@
 </div>
 
 <script>
-    // This is the direct ID for your Mr. Budget Bill Sheet
     const sheetID = '1wF_8A3o9NxNmRI6LbUkSbW6U1yadmOwMdTwIoMnV7Xy-_wVDl7DgrA5cl5S8VSvfjTT';
     
-    // We are telling Google: "Give me the tab named Data in CSV format"
-    const csvURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=Data`;
+    // This matches your tab name exactly
+    const sheetName = 'Kanban'; 
+    const csvURL = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
 
     async function fetchData() {
         try {
-            console.log("Attempting to sync...");
-            const response = await fetch(csvURL);
-            const text = await response.text();
+            // Using a proxy to bypass the "Google is blocking" error
+            const proxyURL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(csvURL);
+            const response = await fetch(proxyURL);
+            const json = await response.json();
+            const text = json.contents;
             
-            // Splits rows and removes the header
             const rows = text.split('\n').slice(1);
             
-            // Clear current cards
             document.getElementById('Idea').innerHTML = '';
             document.getElementById('Ready').innerHTML = '';
             document.getElementById('Done').innerHTML = '';
 
             rows.forEach(row => {
-                // Splits columns correctly even if there are commas in your notes
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 if (cols.length < 3) return;
 
@@ -81,13 +80,11 @@
                     }
                 }
             });
-            console.log("Sync successful!");
         } catch (e) {
             console.error("Sync error:", e);
         }
     }
 
-    // Runs automatically when the page loads
     window.onload = fetchData;
 </script>
     
