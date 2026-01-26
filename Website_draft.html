@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mr. Budget Bill | Finance & Credit</title>
+    <style>
+        :root { --blue: #002366; --orange: #FF6700; --light: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: white; color: #333; }
+        
+        /* Navigation */
+        nav { background: var(--blue); padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: bold; }
+        .logo span { color: var(--orange); }
+        nav a { color: white; text-decoration: none; margin-left: 20px; font-weight: 500; }
+
+        /* Hero Section */
+        header { background: var(--light); padding: 80px 20px; text-align: center; border-bottom: 5px solid var(--orange); }
+        h1 { font-size: 42px; color: var(--blue); margin-bottom: 10px; }
+        p.subtitle { font-size: 18px; color: #666; max-width: 600px; margin: 0 auto 30px auto; }
+        .btn { background: var(--orange); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 18px; transition: 0.3s; }
+        .btn:hover { background: #e55c00; box-shadow: 0 4px 15px rgba(255,103,0,0.3); }
+
+        /* Card Grid */
+        .section { padding: 50px 20px; max-width: 1000px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .card { border: 1px solid #ddd; border-radius: 10px; padding: 20px; text-align: center; background: white; transition: 0.3s; }
+        .card:hover { border-color: var(--blue); transform: translateY(-5px); }
+        .card-img { width: 100%; height: 150px; background: #eee; border-radius: 5px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #999; }
+        .card h3 { color: var(--blue); margin: 10px 0; }
+        
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">Mr. Budget<span>Bill</span></div>
+        <div>
+            <a href="#">Cards</a>
+            <a href="#">Blog</a>
+            <a href="#">Travel Guide</a>
+        </div>
+    </nav>
+
+    <header>
+        <h1>Stop Paying for Flights.</h1>
+        <p class="subtitle">I work a 7-4 job and manage a family. I used credit cards to unlock free travel, and I’ll show you how to do the same.</p>
+        <a href="#" class="btn">Start Your Vault</a>
+    </header>
+
+    <div class="section">
+        <h2 style="text-align: center; color: var(--blue);">Top Card Picks for January</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="card-img">Card Image Placeholder</div>
+                <h3>The Travel King</h3>
+                <p>60,000 Point Bonus. Best for international travel and transfer partners.</p>
+                <a href="#" style="color: var(--orange); font-weight: bold; text-decoration: none;">View Details →</a>
+            </div>
+            <div class="card">
+                <div class="card-img">Card Image Placeholder</div>
+                <h3>The Grocery Pro</h3>
+                <p>4x on Dining and Groceries. The perfect 'Daily Driver' card.</p>
+                <a href="#" style="color: var(--orange); font-weight: bold; text-decoration: none;">View Details →</a>
+            </div>
+            <div class="card">
+                <div class="card-img">Card Image Placeholder</div>
+                <h3>The No-Fee Hero</h3>
+                <p>1.5% back on everything. Zero annual fee, zero stress.</p>
+                <a href="#" style="color: var(--orange); font-weight: bold; text-decoration: none;">View Details →</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
